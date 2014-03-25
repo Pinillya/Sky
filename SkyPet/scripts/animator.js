@@ -35,8 +35,15 @@ function Animator(parentObj)
 	var firstFrame = 0;
 	var lastFrame;
 	var paused;
+	var firstTime = true;
 
-	var defaultAnimation;
+	var defaultAnimation = {
+		id: "",
+		first: 0,
+		last: frames.amount.length,
+		set: false
+	};
+
 	var pOnce = false;
 	var animationQ = [];
 
@@ -90,7 +97,7 @@ function Animator(parentObj)
 		{
 			if (typeof anim === "string")
 			{
-				defaultAnimation = anim;
+				defaultAnimation.id = anim;
 				if (first && typeof first === "number")
 				{
 					defaultAnimation.first = first;
@@ -99,12 +106,14 @@ function Animator(parentObj)
 				{
 					defaultAnimation.last = last;
 				}
+				defaultAnimation.set = true;
+
 			}
 			else if (typeof anim === "number")
 			{
 				try
 				{
-					defaultAnimation = sheets[i].animId;
+					defaultAnimation.id = sheets[i].animId;
 
 					if (first && typeof first === "number")
 					{
@@ -114,6 +123,7 @@ function Animator(parentObj)
 					{
 						defaultAnimation.last = last;
 					}
+					defaultAnimation.set = true;
 				}
 				catch (e)
 				{
@@ -123,9 +133,10 @@ function Animator(parentObj)
 		},
 		getDefaultAnimation: function()
 		{
-			if (defaultAnimation)
+			if (defaultAnimation.id)
 			{
-				return defaultAnimation;
+				console.log(defaultAnimation.first, defaultAnimation.last);
+				return defaultAnimation.id;
 			}
 			else
 			{
@@ -477,7 +488,12 @@ function Animator(parentObj)
 				currentFrame = firstFrame;
 			}
 			// var cF = currentFrame; //cF = current Frame
-
+			if (firstTime && defaultAnimation.set)
+			{
+				firstFrame = defaultAnimation.first;
+				lastFrame = defaultAnimation.last;
+				firstTime = false;
+			}
 			if (!paused)
 			{
 				while (currentDisplayTime > displayTime)
@@ -587,7 +603,7 @@ function Animator(parentObj)
 		},
 		handleCycle: function()
 		{
-			if (defaultAnimation)
+			if (defaultAnimation.id)
 			{
 				if (!defaultAnimation.first)
 				{
@@ -597,11 +613,11 @@ function Animator(parentObj)
 				{
 					defaultAnimation.last = -1;
 				}
-				this.play(defaultAnimation, defaultAnimation.first, defaultAnimation.last);
+				this.play(defaultAnimation.id, defaultAnimation.first, defaultAnimation.last);
 				pOnce = false;
 				console.log("default animation time");
 			}
-			else if (!defaultAnimation)
+			else if (!defaultAnimation.id)
 			{
 				console.lof("Animator::handleCycle: no default animation spoecified");
 				pOnce = false;

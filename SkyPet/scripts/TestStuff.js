@@ -174,20 +174,6 @@ var test = require(["../Objects/test.js"], function()
 });
 // var IdleSprite1 = require(['../img/Pet/anim/IdleSprite2.json']);
 
-function AnimationParser(displayDuration)
-{
-	//for idle
-	//tecture
-	this.texture = "../img/Pet/" + idle2.meta.image;
-	this.texture.wrapS = this.texture.wrapT = THREE.RepeatWrapping;
-
-
-	this.displayDuration = displayDuration;
-}
-
-
-
-
 
 
 //animations properly n
@@ -213,6 +199,59 @@ var mediator = (function()
 var momo = {};
 
 
+var AnimManager = (function()
+{
+
+	//stores reference to singleton, which is animManager
+	var mgr;
+
+	function init()
+	{
+		//singleton
+		//privs
+		var animStack = [];
+		var clock = new THREE.Clock();
+		var stop = false;
+		return {
+			go: function()
+			{
+				if (animStack.length <= 0 || stop)
+				{
+					return;
+				}
+				else
+				{
+					var delta = clock.getDelta();
+					for (var i = 0, j = animStack.length; i < j; i++)
+					{
+						animStack[i].update(1000 * delta);
+					}
+				}
+			},
+			add: function(animator)
+			{
+				animStack.push(animator);
+			},
+			showStack: function()
+			{
+				return animStack;
+			},
+		};
+
+	}
+	return {
+		setup: function()
+		{
+			if (!mgr)
+			{
+				mgr = init();
+			}
+			return mgr;
+		}
+	};
+
+})();
+var aMgr = AnimManager.setup();
 
 // creating sprite object
 function aPet()
@@ -227,7 +266,16 @@ function aPet()
 	//loading sheets from json files
 	this.animator.loadSheets(this.sheets);
 	this.animator.preloadTextures();
-	this.animator.setDefaultAnimation("idle2");
+	this.animator.setDefaultAnimation("idle2", 10, 20);
+	if (aMgr)
+	{
+		aMgr.add(this.animator);
+	}
+	else if (!aMgr)
+	{
+		aMgr = AnimManager.setup();
+		aMgr.add(this.animator);
+	}
 
 	var texture;
 	//animID as paramenter. Will find it in aviable sheets and load proper .png image
@@ -254,10 +302,8 @@ function aPet()
 	mesh.rotation.x = 180 * (Math.PI / 180);
 	scene.add(mesh);
 }
-
-
-// Ignore this, test stuff
 var p;
+
 
 function keysToArray(obj, arr)
 {

@@ -20,9 +20,13 @@ function animate()
 		testChar.tchar.update(1000 * delta);
 	}
 	// checkIntersections();
-	if (p) // for tresting naimations
+	// if (p) // for tresting naimations
+	// {
+	// 	p.animator.update(1000 * delta);
+	// }
+	if (aMgr)
 	{
-		p.animator.update(1000 * delta);
+		aMgr.go();
 	}
 	if (s)
 	{
